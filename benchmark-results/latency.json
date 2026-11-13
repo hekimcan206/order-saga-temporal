@@ -1,0 +1,27 @@
+{
+  "environment": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "runtime": ".NET 10.0.15",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "harness": "linux container on the server network",
+    "startedUtc": "2026-11-13T19:01:19.2567631Z"
+  },
+  "scenario": "latency",
+  "result": {
+    "saga": {
+      "N": 300,
+      "P50Ms": 249.92,
+      "P95Ms": 254.46,
+      "P99Ms": 258.23,
+      "MeanMs": 250.35
+    },
+    "direct": {
+      "N": 300,
+      "P50Ms": 14.59,
+      "P95Ms": 17.3,
+      "P99Ms": 18.44,
+      "MeanMs": 14.86
+    }
+  }
+}

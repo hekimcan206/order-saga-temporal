@@ -1,0 +1,3 @@
+Host load at the start of the containerised benchmark run (2026-11-13):
+- running containers on the Docker VM: 8 (this run's PostgreSQL and Temporal, plus 6 unrelated idle containers)
+- host CPU load (Win32_Processor.LoadPercentage): 43 %; another build/test agent was active on the machine

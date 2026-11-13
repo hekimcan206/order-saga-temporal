@@ -1,0 +1,61 @@
+{
+  "environment": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "runtime": ".NET 10.0.15",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "harness": "linux container on the server network",
+    "startedUtc": "2026-11-13T19:01:19.2567631Z"
+  },
+  "scenario": "throughput",
+  "result": [
+    {
+      "concurrency": 1,
+      "sagas": 64,
+      "sagasPerSecond": 4.2,
+      "latency": {
+        "N": 64,
+        "P50Ms": 249.36,
+        "P95Ms": 254.37,
+        "P99Ms": 256.69,
+        "MeanMs": 237.7
+      }
+    },
+    {
+      "concurrency": 4,
+      "sagas": 234,
+      "sagasPerSecond": 15.3,
+      "latency": {
+        "N": 234,
+        "P50Ms": 251.09,
+        "P95Ms": 306.2,
+        "P99Ms": 351.41,
+        "MeanMs": 258.92
+      }
+    },
+    {
+      "concurrency": 16,
+      "sagas": 443,
+      "sagasPerSecond": 28.9,
+      "latency": {
+        "N": 443,
+        "P50Ms": 528.96,
+        "P95Ms": 806.39,
+        "P99Ms": 966.35,
+        "MeanMs": 549.12
+      }
+    },
+    {
+      "concurrency": 64,
+      "sagas": 531,
+      "sagasPerSecond": 32.1,
+      "latency": {
+        "N": 531,
+        "P50Ms": 958.8,
+        "P95Ms": 5665.27,
+        "P99Ms": 5968.96,
+        "MeanMs": 1920.82
+      }
+    }
+  ]
+}

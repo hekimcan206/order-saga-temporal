@@ -1,0 +1,26 @@
+{
+  "environment": {
+    "os": "Microsoft Windows 10.0.26200",
+    "runtime": ".NET 10.0.12",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "startedUtc": "2026-11-13T18:45:50.9504262Z"
+  },
+  "scenario": "latency",
+  "result": {
+    "saga": {
+      "N": 300,
+      "P50Ms": 480.14,
+      "P95Ms": 492.44,
+      "P99Ms": 501.13,
+      "MeanMs": 480.02
+    },
+    "direct": {
+      "N": 300,
+      "P50Ms": 4.67,
+      "P95Ms": 5.91,
+      "P99Ms": 7.83,
+      "MeanMs": 4.87
+    }
+  }
+}

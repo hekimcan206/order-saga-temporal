@@ -1,0 +1,49 @@
+{
+  "environment": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "runtime": ".NET 10.0.15",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "harness": "linux container on the server network",
+    "startedUtc": "2026-11-13T19:01:19.2567631Z"
+  },
+  "scenario": "recovery",
+  "result": [
+    {
+      "stickyQueueTimeout": "default",
+      "runs": 5,
+      "killToCompleted": {
+        "N": 5,
+        "P50Ms": 15806.76,
+        "P95Ms": 15984.27,
+        "P99Ms": 15984.27,
+        "MeanMs": 15842.63
+      },
+      "killToReplacementReady": {
+        "N": 5,
+        "P50Ms": 1095.53,
+        "P95Ms": 1292.39,
+        "P99Ms": 1292.39,
+        "MeanMs": 1102.36
+      }
+    },
+    {
+      "stickyQueueTimeout": "00:00:01",
+      "runs": 5,
+      "killToCompleted": {
+        "N": 5,
+        "P50Ms": 6851.53,
+        "P95Ms": 6868.06,
+        "P99Ms": 6868.06,
+        "MeanMs": 6807.75
+      },
+      "killToReplacementReady": {
+        "N": 5,
+        "P50Ms": 1136.5,
+        "P95Ms": 1378.42,
+        "P99Ms": 1378.42,
+        "MeanMs": 1144.25
+      }
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "environment": {
+    "os": "Microsoft Windows 10.0.26200",
+    "runtime": ".NET 10.0.12",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "startedUtc": "2026-11-13T18:45:50.9504262Z"
+  },
+  "scenario": "throughput",
+  "result": [
+    {
+      "concurrency": 1,
+      "sagas": 32,
+      "sagasPerSecond": 2.1,
+      "latency": {
+        "N": 32,
+        "P50Ms": 477.82,
+        "P95Ms": 495.03,
+        "P99Ms": 496.27,
+        "MeanMs": 476.38
+      }
+    },
+    {
+      "concurrency": 4,
+      "sagas": 124,
+      "sagasPerSecond": 8,
+      "latency": {
+        "N": 124,
+        "P50Ms": 502.67,
+        "P95Ms": 597.77,
+        "P99Ms": 694.22,
+        "MeanMs": 493.82
+      }
+    },
+    {
+      "concurrency": 16,
+      "sagas": 644,
+      "sagasPerSecond": 41.7,
+      "latency": {
+        "N": 644,
+        "P50Ms": 368.31,
+        "P95Ms": 524.92,
+        "P99Ms": 586.72,
+        "MeanMs": 378.63
+      }
+    },
+    {
+      "concurrency": 64,
+      "sagas": 623,
+      "sagasPerSecond": 37.8,
+      "latency": {
+        "N": 623,
+        "P50Ms": 783.09,
+        "P95Ms": 5004.49,
+        "P99Ms": 5362.72,
+        "MeanMs": 1617.88
+      }
+    }
+  ]
+}

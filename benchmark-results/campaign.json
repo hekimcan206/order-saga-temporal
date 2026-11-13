@@ -1,0 +1,88 @@
+{
+  "environment": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "runtime": ".NET 10.0.15",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "harness": "linux container on the server network",
+    "startedUtc": "2026-11-13T19:01:19.2567631Z"
+  },
+  "scenario": "campaign",
+  "result": {
+    "seed": 27,
+    "planShapes": {
+      "none": 20,
+      "reject": 20,
+      "transient": 20,
+      "lost-response": 20,
+      "lost-then-outage": 20,
+      "zombie-then-outage": 20,
+      "failing-undo": 20
+    },
+    "variants": [
+      {
+        "variant": "Correct",
+        "sagas": 140,
+        "completed": 60,
+        "compensated": 80,
+        "compensationFailed": 0,
+        "inconsistent": 0,
+        "violations": {},
+        "brokenByShape": {},
+        "wallClockMs": 12477
+      },
+      {
+        "variant": "CompensateAfterSuccess",
+        "sagas": 140,
+        "completed": 60,
+        "compensated": 80,
+        "compensationFailed": 0,
+        "inconsistent": 40,
+        "violations": {
+          "platform-still-accepted": 7,
+          "leaked-charge": 26,
+          "orphan-courier": 2,
+          "orphan-ticket": 5
+        },
+        "brokenByShape": {
+          "lost-then-outage": 20,
+          "zombie-then-outage": 20
+        },
+        "wallClockMs": 12460
+      },
+      {
+        "variant": "NoIdempotencyKey",
+        "sagas": 140,
+        "completed": 60,
+        "compensated": 80,
+        "compensationFailed": 0,
+        "inconsistent": 25,
+        "violations": {
+          "leaked-charge": 20,
+          "double-charge": 5,
+          "wrong-amount": 5
+        },
+        "brokenByShape": {
+          "zombie-then-outage": 20,
+          "lost-response": 5
+        },
+        "wallClockMs": 12760
+      },
+      {
+        "variant": "NoTombstone",
+        "sagas": 140,
+        "completed": 60,
+        "compensated": 80,
+        "compensationFailed": 0,
+        "inconsistent": 20,
+        "violations": {
+          "leaked-charge": 20
+        },
+        "brokenByShape": {
+          "zombie-then-outage": 20
+        },
+        "wallClockMs": 12353
+      }
+    ]
+  }
+}

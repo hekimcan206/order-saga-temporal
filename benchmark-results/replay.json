@@ -1,0 +1,35 @@
+{
+  "environment": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "runtime": ".NET 10.0.15",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "harness": "linux container on the server network",
+    "startedUtc": "2026-11-13T19:01:19.2567631Z"
+  },
+  "scenario": "replay",
+  "result": [
+    {
+      "history": "v2/completed.json",
+      "events": 29,
+      "replay": {
+        "N": 300,
+        "P50Ms": 4.1,
+        "P95Ms": 6.23,
+        "P99Ms": 9.67,
+        "MeanMs": 4.47
+      }
+    },
+    {
+      "history": "v2/customer-cancelled.json",
+      "events": 68,
+      "replay": {
+        "N": 300,
+        "P50Ms": 8.78,
+        "P95Ms": 14.05,
+        "P99Ms": 16.2,
+        "MeanMs": 9.38
+      }
+    }
+  ]
+}

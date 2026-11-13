@@ -5,6 +5,9 @@
     <Project Path="src/OrderSaga.Downstream/OrderSaga.Downstream.csproj" />
     <Project Path="src/OrderSaga.Workflows/OrderSaga.Workflows.csproj" />
   </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/OrderSaga.Benchmarks/OrderSaga.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OrderSaga.IntegrationTests/OrderSaga.IntegrationTests.csproj" />
     <Project Path="tests/OrderSaga.UnitTests/OrderSaga.UnitTests.csproj" />

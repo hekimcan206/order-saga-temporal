@@ -1,0 +1,120 @@
+{"os":"Microsoft Windows 10.0.26200","runtime":".NET 10.0.12","processors":16,"containers":"postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs","startedUtc":"2026-11-13T18:45:50.9504262Z"}
+[testcontainers.org 00:00:00.14] Connected to Docker:
+  Host: npipe://./pipe/docker_engine
+  Server Version: 29.9.1
+  Kernel Version: 6.18.58.1-microsoft-standard-WSL2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 7.62 GB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+[testcontainers.org 00:00:00.34] Docker container e7c0d760ad4d created
+[testcontainers.org 00:00:00.42] Start Docker container e7c0d760ad4d
+[testcontainers.org 00:00:00.61] Wait for Docker container e7c0d760ad4d to complete readiness checks
+[testcontainers.org 00:00:01.66] Docker container e7c0d760ad4d ready
+[testcontainers.org 00:00:01.77] Docker container 215b900d306c created
+[testcontainers.org 00:00:01.79] Start Docker container 215b900d306c
+[testcontainers.org 00:00:01.81] Docker container 1e50731e27dd created
+[testcontainers.org 00:00:01.82] Add file to tar archive: Content length: 1458 byte(s), Target file: "/docker-entrypoint-initdb.d/01-roles.sh", UID: 0, GID: 0, Mode: 0644
+[testcontainers.org 00:00:01.84] Copy tar archive to container: Content length: 1458 byte(s), Docker container: 1e50731e27dd
+[testcontainers.org 00:00:01.91] Start Docker container 1e50731e27dd
+[testcontainers.org 00:00:02.04] Wait for Docker container 215b900d306c to complete readiness checks
+[testcontainers.org 00:00:02.13] Wait for Docker container 1e50731e27dd to complete readiness checks
+[testcontainers.org 00:00:02.15] Execute "pg_isready --host localhost --dbname ordersaga --username postgres" at Docker container 1e50731e27dd
+[testcontainers.org 00:00:03.08] Docker container 215b900d306c ready
+[testcontainers.org 00:00:03.23] Execute "pg_isready --host localhost --dbname ordersaga --username postgres" at Docker container 1e50731e27dd
+[testcontainers.org 00:00:04.29] Execute "pg_isready --host localhost --dbname ordersaga --username postgres" at Docker container 1e50731e27dd
+[testcontainers.org 00:00:04.34] Docker container 1e50731e27dd ready
+== latency
+{
+  "environment": {
+    "os": "Microsoft Windows 10.0.26200",
+    "runtime": ".NET 10.0.12",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "startedUtc": "2026-11-13T18:45:50.9504262Z"
+  },
+  "scenario": "latency",
+  "result": {
+    "saga": {
+      "N": 300,
+      "P50Ms": 480.14,
+      "P95Ms": 492.44,
+      "P99Ms": 501.13,
+      "MeanMs": 480.02
+    },
+    "direct": {
+      "N": 300,
+      "P50Ms": 4.67,
+      "P95Ms": 5.91,
+      "P99Ms": 7.83,
+      "MeanMs": 4.87
+    }
+  }
+}
+== throughput
+  concurrency 1: 2,1/s, p50 477,82 ms, p95 495,03 ms
+  concurrency 4: 8/s, p50 502,67 ms, p95 597,77 ms
+  concurrency 16: 41,7/s, p50 368,31 ms, p95 524,92 ms
+  concurrency 64: 37,8/s, p50 783,09 ms, p95 5004,49 ms
+{
+  "environment": {
+    "os": "Microsoft Windows 10.0.26200",
+    "runtime": ".NET 10.0.12",
+    "processors": 16,
+    "containers": "postgres:17-alpine and temporalio/temporal:1.9.1, each capped at 2 CPUs",
+    "startedUtc": "2026-11-13T18:45:50.9504262Z"
+  },
+  "scenario": "throughput",
+  "result": [
+    {
+      "concurrency": 1,
+      "sagas": 32,
+      "sagasPerSecond": 2.1,
+      "latency": {
+        "N": 32,
+        "P50Ms": 477.82,
+        "P95Ms": 495.03,
+        "P99Ms": 496.27,
+        "MeanMs": 476.38
+      }
+    },
+    {
+      "concurrency": 4,
+      "sagas": 124,
+      "sagasPerSecond": 8,
+      "latency": {
+        "N": 124,
+        "P50Ms": 502.67,
+        "P95Ms": 597.77,
+        "P99Ms": 694.22,
+        "MeanMs": 493.82
+      }
+    },
+    {
+      "concurrency": 16,
+      "sagas": 644,
+      "sagasPerSecond": 41.7,
+      "latency": {
+        "N": 644,
+        "P50Ms": 368.31,
+        "P95Ms": 524.92,
+        "P99Ms": 586.72,
+        "MeanMs": 378.63
+      }
+    },
+    {
+      "concurrency": 64,
+      "sagas": 623,
+      "sagasPerSecond": 37.8,
+      "latency": {
+        "N": 623,
+        "P50Ms": 783.09,
+        "P95Ms": 5004.49,
+        "P99Ms": 5362.72,
+        "MeanMs": 1617.88
+      }
+    }
+  ]
+}
+== compensation
