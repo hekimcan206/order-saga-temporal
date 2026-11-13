@@ -15,6 +15,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OrderSaga.Core\OrderSaga.Core.csproj" />
+    <ProjectReference Include="..\..\src\OrderSaga.Workflows\OrderSaga.Workflows.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Golden event histories recorded from real runs (see HistoryRecordingTests); replayed without a server. -->
+    <None Include="Histories/**/*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

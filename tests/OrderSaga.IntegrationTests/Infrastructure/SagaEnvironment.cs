@@ -120,7 +120,12 @@ public sealed class SagaEnvironment : IAsyncLifetime
         {
             try
             {
-                return await TemporalClient.ConnectAsync(new TemporalClientConnectOptions(address) { Namespace = "default" });
+                return await TemporalClient.ConnectAsync(new TemporalClientConnectOptions(address)
+                {
+                    Namespace = "default",
+                    // The default identity is pid@hostname; recorded golden histories must not carry the machine name.
+                    Identity = "order-saga-tests",
+                });
             }
             catch (Exception) when (attempt < 30)
             {
