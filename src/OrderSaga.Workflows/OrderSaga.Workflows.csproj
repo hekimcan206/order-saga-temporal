@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OrderSaga.Workflows</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Temporalio" />
+    <PackageReference Include="Temporalio.Extensions.Hosting" />
+    <PackageReference Include="Temporalio.Extensions.OpenTelemetry" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OrderSaga.Core\OrderSaga.Core.csproj" />
+    <ProjectReference Include="..\OrderSaga.Downstream\OrderSaga.Downstream.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OrderSaga.UnitTests" />
+    <InternalsVisibleTo Include="OrderSaga.IntegrationTests" />
+  </ItemGroup>
+
+</Project>
