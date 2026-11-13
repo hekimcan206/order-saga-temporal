@@ -5,6 +5,7 @@
     <Project Path="src/OrderSaga.Workflows/OrderSaga.Workflows.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/OrderSaga.IntegrationTests/OrderSaga.IntegrationTests.csproj" />
     <Project Path="tests/OrderSaga.UnitTests/OrderSaga.UnitTests.csproj" />
   </Folder>
 </Solution>
