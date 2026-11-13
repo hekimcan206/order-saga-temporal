@@ -210,6 +210,41 @@ public sealed class DownstreamSystems(NpgsqlDataSource dataSource, FaultInjector
     public Task<UndoOutcome> CancelCourierAsync(EffectCall call, bool writeTombstone, CancellationToken cancellationToken = default) =>
         UndoAsync(call, SagaStep.CourierDispatch, ct => UndoSimpleAsync("sim.courier_dispatches", call, writeTombstone, ct), cancellationToken);
 
+    // ---- Customer notifications (saga v2) ------------------------------------------------------------------------
+
+    /// <summary>Tells the customer the order was unwound. Idempotent: one notice per key, however often it is retried.</summary>
+    /// <returns>true when this call sent the notice, false when it had been sent already.</returns>
+    public async Task<bool> NotifyCustomerAsync(string orderId, string idempotencyKey, string kind, CancellationToken cancellationToken = default)
+    {
+        await SimulateLatencyAsync(cancellationToken);
+        await using var cmd = dataSource.CreateCommand("""
+            INSERT INTO sim.customer_notifications (idempotency_key, order_id, kind)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (idempotency_key) DO NOTHING
+            RETURNING 1
+            """);
+        cmd.Parameters.Add(new() { Value = idempotencyKey });
+        cmd.Parameters.Add(new() { Value = orderId });
+        cmd.Parameters.Add(new() { Value = kind });
+        return await cmd.ExecuteScalarAsync(cancellationToken) is not null;
+    }
+
+    /// <summary>Notices sent for an order, oldest first.</summary>
+    public async Task<IReadOnlyList<string>> NotificationsAsync(string orderId, CancellationToken cancellationToken = default)
+    {
+        await using var cmd = dataSource.CreateCommand(
+            "SELECT kind FROM sim.customer_notifications WHERE order_id = $1 ORDER BY created_at");
+        cmd.Parameters.Add(new() { Value = orderId });
+        var kinds = new List<string>();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            kinds.Add(reader.GetString(0));
+        }
+
+        return kinds;
+    }
+
     // ---- Reading the truth --------------------------------------------------------------------------------------
 
     /// <summary>What the downstream systems themselves record for an order (used by tests, the demo and benchmarks).</summary>

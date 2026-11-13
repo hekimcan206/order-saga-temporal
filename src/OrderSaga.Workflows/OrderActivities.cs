@@ -17,6 +17,9 @@ public sealed record StepInput(
     bool KeyPerAttempt = false,
     bool WriteTombstone = true);
 
+/// <summary>Input of the v2 customer notification after an unwind.</summary>
+public sealed record CustomerNotice(string OrderId, string IdempotencyKey, string Kind);
+
 /// <summary>Error types the workflow and its retry policy distinguish.</summary>
 public static class SagaErrors
 {
@@ -77,6 +80,15 @@ public sealed class OrderActivities(DownstreamSystems downstream)
     [Activity]
     public Task<string> CancelCourierAsync(StepInput input) =>
         Run(async (call, ct) => (await downstream.CancelCourierAsync(call, input.WriteTombstone, ct)).ToString(), input, compensation: true);
+
+    /// <summary>Saga v2: tell the customer the order was unwound (and whether money is coming back).</summary>
+    [Activity]
+    public async Task<bool> NotifyCustomerAsync(CustomerNotice notice)
+    {
+        ArgumentNullException.ThrowIfNull(notice);
+        return await downstream.NotifyCustomerAsync(
+            notice.OrderId, notice.IdempotencyKey, notice.Kind, ActivityExecutionContext.Current.CancellationToken);
+    }
 
     private static async Task<T> Run<T>(Func<EffectCall, CancellationToken, Task<T>> action, StepInput input, bool compensation = false)
     {

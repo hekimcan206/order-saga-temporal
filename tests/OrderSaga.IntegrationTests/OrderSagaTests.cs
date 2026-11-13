@@ -282,6 +282,22 @@ public sealed class OrderSagaTests(SagaEnvironment env)
         await handle.GetResultAsync();
     }
 
+    [Fact]
+    public async Task An_unwound_order_notifies_the_customer_once_and_says_whether_money_comes_back()
+    {
+        var completed = New();
+        var declined = New();
+        var noCourier = New();
+
+        await env.RunAsync(completed);
+        await env.RunAsync(declined, Forward(SagaStep.Payment, FaultKind.Reject));
+        await env.RunAsync(noCourier, Forward(SagaStep.CourierDispatch, FaultKind.Reject), Undo(SagaStep.CourierDispatch, FaultKind.LostResponse));
+
+        (await env.Downstream.NotificationsAsync(completed.OrderId)).Should().BeEmpty();
+        (await env.Downstream.NotificationsAsync(declined.OrderId)).Should().Equal("order-cancelled");
+        (await env.Downstream.NotificationsAsync(noCourier.OrderId)).Should().Equal("order-cancelled-refund-issued");
+    }
+
     internal static async Task<SagaState> WaitForStageAsync(WorkflowHandle<OrderSagaWorkflow, SagaResult> handle, SagaStage stage)
     {
         var deadline = DateTime.UtcNow.AddSeconds(30);

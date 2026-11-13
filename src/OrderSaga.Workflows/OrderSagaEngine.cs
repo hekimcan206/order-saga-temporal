@@ -29,8 +29,17 @@ public enum SagaVariant
 /// The order saga itself, shared by <see cref="OrderSagaWorkflow"/> and the lab workflow. Runs inside workflow code,
 /// so everything here is deterministic: workflow time, workflow timers, no I/O except through activities.
 /// </summary>
-internal sealed class OrderSagaEngine(PlaceOrder order, SagaVariant variant)
+/// <param name="guardWithPatch">
+/// Always true in production. False only in the replay test that proves why the v2 change needs its patch marker.
+/// </param>
+internal sealed class OrderSagaEngine(PlaceOrder order, SagaVariant variant, bool guardWithPatch = true)
 {
+    /// <summary>
+    /// v2 change: after an unwind, notify the customer. Sagas that started on v1 code are still running somewhere when
+    /// v2 deploys; their histories have no such activity, so the new command is guarded by a patch marker (ADR 0004).
+    /// </summary>
+    internal const string NotifyCustomerPatch = "notify-customer-after-unwind";
+
     /// <summary>Forward steps retry transient failures for a few seconds, then the saga gives up and unwinds.</summary>
     internal static readonly ActivityOptions ForwardOptions = new()
     {
@@ -168,6 +177,11 @@ internal sealed class OrderSagaEngine(PlaceOrder order, SagaVariant variant)
         var report = await log.UnwindAsync();
         _compensations.AddRange(report.Results);
 
+        if (!guardWithPatch || Workflow.Patched(NotifyCustomerPatch))
+        {
+            await NotifyCustomerAsync();
+        }
+
         var status = report.AllSucceeded ? SagaStatus.Compensated : SagaStatus.CompensationFailed;
         Stage = report.AllSucceeded ? SagaStage.Compensated : SagaStage.CompensationFailed;
         Record(status == SagaStatus.Compensated ? "compensated" : "compensation-failed", failedStep, reason);
@@ -215,6 +229,29 @@ internal sealed class OrderSagaEngine(PlaceOrder order, SagaVariant variant)
         {
             Record("compensation-failed", step, Describe(ex));
             throw;
+        }
+    }
+
+    private async Task NotifyCustomerAsync()
+    {
+        // "Undone" is the payment provider saying money moved back; a tombstone means there was nothing to refund.
+        var refunded = _timeline.Exists(e => e.Kind == "compensated" && e.Step == SagaStep.Payment && e.Detail == "Undone");
+        var options = (ActivityOptions)CompensationOptions.Clone();
+        options.CancellationToken = CancellationToken.None;
+        try
+        {
+            await Workflow.ExecuteActivityAsync(
+                (OrderActivities a) => a.NotifyCustomerAsync(new CustomerNotice(
+                    order.OrderId,
+                    $"{order.OrderId}:notify",
+                    refunded ? "order-cancelled-refund-issued" : "order-cancelled")),
+                options);
+            Record("customer-notified", null, null);
+        }
+        catch (ActivityFailureException ex)
+        {
+            // A notice is a courtesy: failing to send it must not turn a clean unwind into a failed saga.
+            Record("customer-notification-failed", null, Describe(ex));
         }
     }
 
