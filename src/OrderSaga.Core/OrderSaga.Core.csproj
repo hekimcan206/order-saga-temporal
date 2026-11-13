@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OrderSaga.Core</RootNamespace>
+    <!-- No Temporal or database dependency: the saga's rules (step order, compensation unwinding, the consistency
+         invariant) are plain code, so they are unit- and property-tested without a server. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OrderSaga.UnitTests" />
+  </ItemGroup>
+
+</Project>
