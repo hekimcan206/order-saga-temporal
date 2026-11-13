@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/OrderSaga.Core/OrderSaga.Core.csproj" />
+    <Project Path="src/OrderSaga.Downstream/OrderSaga.Downstream.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OrderSaga.UnitTests/OrderSaga.UnitTests.csproj" />
