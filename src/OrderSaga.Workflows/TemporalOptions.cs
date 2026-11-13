@@ -10,4 +10,10 @@ public sealed class TemporalOptions
     public string Namespace { get; set; } = "default";
 
     public string TaskQueue { get; set; } = OrderSagaWorkflow.TaskQueue;
+
+    /// <summary>
+    /// How long a workflow task waits on a dead worker's sticky queue before any worker may take it. The SDK default
+    /// (10 s) dominates crash recovery for a saga with short activities; see docs/benchmarks.md. Null keeps the default.
+    /// </summary>
+    public TimeSpan? StickyQueueTimeout { get; set; }
 }

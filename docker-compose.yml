@@ -1,0 +1,126 @@
+# `docker compose up` runs the whole demo with zero manual steps:
+#   postgres  -> the simulated downstream systems (platform, kitchen, payment, courier), least-privilege roles
+#   temporal  -> Temporal CLI dev server (in-memory persistence, Web UI on http://127.0.0.1:58233)
+#   migrator  -> app image, `--migrate-only`, connects as the schema owner, exits
+#   api       -> app image, Roles=api: HTTP API that starts sagas, queries them, sends updates and signals
+#   worker    -> app image, Roles=worker, two replicas competing for the same task queue
+#   demo      -> app image, `--demo`: eight scenarios through the HTTP API, then checks the downstream truth;
+#                exits 0 only if every saga ended as expected with no broken consistency rule
+# Optional: `docker compose --profile observability up` adds the Aspire dashboard as an OTLP backend
+# (set OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889, see .env.example).
+name: order-saga-temporal
+
+x-app-image: &app-image
+  image: order-saga-temporal:local
+  build:
+    context: .
+    dockerfile: Dockerfile
+
+x-app-env: &app-env
+  ConnectionStrings__Downstream: Host=postgres;Database=ordersaga;Username=saga_app;Password=${APP_PASSWORD:-app-dev-only};Timeout=5
+  Temporal__Address: temporal:7233
+  Api__Key: ${API_KEY:-api-dev-only}
+  Api__SimulationEnabled: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ordersaga
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres-dev-only}
+      MIGRATOR_PASSWORD: ${MIGRATOR_PASSWORD:-migrator-dev-only}
+      APP_PASSWORD: ${APP_PASSWORD:-app-dev-only}
+    ports:
+      # Loopback only: lets `dotnet run` (appsettings.Development.json) and psql use this database.
+      - "127.0.0.1:${POSTGRES_PORT:-58542}:5432"
+    volumes:
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ordersaga"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  temporal:
+    image: temporalio/temporal:1.9.1
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--log-level", "warn"]
+    ports:
+      # Loopback only: the dev server has no authentication.
+      - "127.0.0.1:${TEMPORAL_PORT:-57233}:7233"
+      - "127.0.0.1:${TEMPORAL_UI_PORT:-58233}:8233"
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "localhost:7233"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrator:
+    <<: *app-image
+    command: ["--migrate-only"]
+    environment:
+      ConnectionStrings__Downstream: Host=postgres;Database=ordersaga;Username=saga_migrator;Password=${MIGRATOR_PASSWORD:-migrator-dev-only}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *app-image
+    ports:
+      - "127.0.0.1:${API_PORT:-58280}:8080"
+    environment:
+      <<: *app-env
+      Roles: api
+      OpenApi__Enabled: "true"
+      OTEL_SERVICE_NAME: order-saga-api
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      temporal:
+        condition: service_healthy
+    # No container HEALTHCHECK: the chiseled image has no shell or curl. Probe /health/live and /health/ready over HTTP.
+    restart: unless-stopped
+
+  worker:
+    <<: *app-image
+    environment:
+      <<: *app-env
+      Roles: worker
+      OTEL_SERVICE_NAME: order-saga-worker
+    deploy:
+      replicas: 2
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      temporal:
+        condition: service_healthy
+    restart: unless-stopped
+
+  demo:
+    <<: *app-image
+    command: ["--demo"]
+    environment:
+      Demo__ApiUrl: http://api:8080/
+      Api__Key: ${API_KEY:-api-dev-only}
+    depends_on:
+      api:
+        condition: service_started
+      worker:
+        condition: service_started
+    restart: "no"
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13.6
+    profiles: ["observability"]
+    environment:
+      # Local-only convenience; never expose an unsecured dashboard beyond localhost.
+      DASHBOARD__FRONTEND__AUTHMODE: Unsecured
+      DASHBOARD__OTLP__AUTHMODE: Unsecured
+    ports:
+      - "127.0.0.1:58288:18888"
+
+volumes:
+  pgdata:

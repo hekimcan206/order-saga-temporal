@@ -245,7 +245,7 @@ internal sealed class OrderSagaEngine(PlaceOrder order, SagaVariant variant)
         _timeline.Add(new SagaEvent(Workflow.UtcNow, kind, step, detail));
 
     private SagaResult Result(SagaStatus status, SagaStep? failedStep, string? reason) =>
-        new(order.OrderId, status, failedStep, reason, [.. _completed], [.. _compensations], CourierId);
+        new(order.OrderId, status, failedStep, reason, [.. _completed], [.. _compensations], CourierId, order.TotalKurus());
 
     private static string Describe(ActivityFailureException ex) => ex.InnerException switch
     {

@@ -42,6 +42,7 @@ public sealed record SagaState(
 /// <param name="FailedStep">The step whose failure started the unwind; null when completed or cancelled by the customer.</param>
 /// <param name="Completed">Steps that returned success, in order.</param>
 /// <param name="Compensations">Compensations in the order they ran (the reverse of registration).</param>
+/// <param name="TotalKurus">The order total the saga charged (or would have charged), for checking the outcome.</param>
 public sealed record SagaResult(
     string OrderId,
     SagaStatus Status,
@@ -49,7 +50,8 @@ public sealed record SagaResult(
     string? Reason,
     IReadOnlyList<SagaStep> Completed,
     IReadOnlyList<CompensationResult> Compensations,
-    string? CourierId);
+    string? CourierId,
+    long TotalKurus);
 
 /// <summary>Answer to a customer cancellation request (a workflow update, so the caller learns the outcome).</summary>
 public sealed record CancelDecision(bool Accepted, string Reason);

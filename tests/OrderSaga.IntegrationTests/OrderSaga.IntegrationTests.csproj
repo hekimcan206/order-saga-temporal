@@ -10,6 +10,7 @@
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="FsCheck.Xunit.v3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
@@ -17,6 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OrderSaga.Workflows\OrderSaga.Workflows.csproj" />
+    <!-- The API tests host it in-process; the crash tests run it as a separate process from its own output folder. -->
+    <ProjectReference Include="..\..\src\OrderSaga.App\OrderSaga.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>
